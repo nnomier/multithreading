@@ -6,9 +6,9 @@
 int *arr;
 
 
-struct parameters{
-  int l;
-  int r;
+struct params {
+        int l;
+        int r;
 };
 
 int readArray()
@@ -29,7 +29,6 @@ int readArray()
         fclose(f);
 
         printf("after reading..\n");
-
 
         return n;
 }
@@ -82,35 +81,52 @@ void merge(int l,int mid,int r)
         }
 }
 
-void mergeSort(int l, int r)
+
+void* mergeSort(void* item)
 {
+        struct params *args = (struct params*) item;
+        int l=args->l;
+        int r=args->r;
 
         if(l<r)
         {
                 int mid = l + (r-l)/2;
+                pthread_t thread1,thread2;
+                struct params params1,params2;
+                params1.l=l;
+                params1.r=mid;
+                params2.l=mid+1;
+                params2.r=r;
 
-                mergeSort(l,mid);
-                mergeSort(mid+1,r);
+                pthread_create(&thread1,NULL,mergeSort, &params1);
+                pthread_create(&thread2,NULL,mergeSort, &params2);
+
+                pthread_join(thread1,NULL);
+                pthread_join(thread2,NULL);
+
+
                 merge(l,mid,r);
         }
 }
 
 int main(int argc, char const *argv[]) {
         int n=  readArray();
-        // int n=5;
-        // arr[0]=1;
-        // arr[1]=10;
-        // arr[2]=20;
-        // arr[3]=5;
-        // arr[4]=2;
+        struct params parameters;
+        parameters.l = 0;
+        parameters.r = n-1;
+
+        pthread_t initialThread;
+
+        pthread_create(&initialThread,NULL,mergeSort,&parameters);
+        pthread_join(initialThread,NULL);
         int i;
-        mergeSort(0,n-1);
+        // mergeSort(0,n-1);
         // printf("after sorting ..\n");
         // int i;
         for (i=0; i < n; i++)
                 printf("%d ", arr[i]);
         printf("\n");
-        // // free(arr);
+        free(arr);
 
         return 0;
 }
