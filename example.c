@@ -3,7 +3,8 @@
 #include <unistd.h>
 #define MAXIMUM 100
 
-int A[MAXIMUM][MAXIMUM], B[MAXIMUM][MAXIMUM], C[MAXIMUM][MAXIMUM];
+int A[MAXIMUM][MAXIMUM], B[MAXIMUM][MAXIMUM], C1[MAXIMUM][MAXIMUM],C2[MAXIMUM][MAXIMUM];
+int m1,m2,n1,n2;
 
 struct cell {
 								int row;
@@ -12,73 +13,98 @@ struct cell {
 								int result;
 };
 
+struct row {
+								int row_num;
+								int m;
+								int n;
+};
+
+void readMatrix()
+{
+								FILE *f;
+								f =fopen("input.txt","r");
+								int i,j;
+								fscanf(f, "%d%d",&m1,&n1);
+								for(i=0; i<m1; i++)
+								{
+																for(j=0; j<n1; j++)
+																{
+																								fscanf(f, "%d",&A[i][j]);
+																}
+								}
+
+								fscanf(f, "%d%d",&m2,&n2);
+
+								for(i=0; i<m2; i++)
+								{
+																for(j=0; j<n2; j++)
+																{
+																								fscanf(f, "%d",&B[i][j]);
+																}
+								}
+								fclose(f);
+}
+
+void writeFile(){
+								FILE *f;
+								int i;
+								f =fopen("input.txt","w");
+								fprintf(f, "ELEMENT BY ELEMENT RESULT \n");
+								for ( i = 0; i < m1; i++) {
+																for (int j = 0; j < n2; j++)
+																								fprintf(f, "%d", C1[i][j]);
+																fprintf(f,"\n");
+								}
+								fprintf(f, "ROW THREADING RESULT \n");
+								for ( i = 0; i < m1; i++) {
+																for (int j = 0; j < n2; j++)
+																								fprintf(f, "%d", C2[i][j]);
+																fprintf(f,"\n");
+								}
+								fclose(f);
+}
+
 void* multiply_cell(void* item)
 {
 								struct cell *cell_struct =
 																(struct cell*) item;
-
 								int sum = 0;
 								int i;
 								int r = cell_struct->row;
 								int c = cell_struct->col;
 								int n = cell_struct->end;
-								//TODO: we will see how will get the limit of the loop later
 								for ( i = 0; i <n; i++) {
 																sum += A[r][i]*B[i][c];
 								}
-
 								printf("cell= %d\n",sum );
 								cell_struct->result = sum;
 								// C[r][c] =sum;
 								sum=0;
-
 								pthread_exit(0);
 }
 
-int main()
+void* multiply_row(void* item)
 {
-								int m1, n1, m2, n2, i, j;
-								int max=m1*n2;
+								struct row *row_struct =
+																(struct row*) item;
+								int r = row_struct->row_num;
+								int m =row_struct->m;
+								int n = row_struct->n;
+								int sum = 0;
+								int i;
+								int j;
+								for ( i = 0; i < n; i++)
+																for ( j = 0; j < m; j++)
+																								C2[r][i] += A[r][j] * B[j][i];
+								// C[r][c] =sum;
+								pthread_exit(0);
+}
 
-								// Read the elements of Matrix A from user
+void cellThreading()
+{
+								printf("----- A) CREATE A THREAD FOR EACH ELEMENT ----- \n" );
 
-
-								// Read size of Matrix A from user
-								printf("\nEnter the number of ms of first Matrix: ");
-								scanf("%d", &m1);
-								printf("%d", m1);
-								printf("\nEnter the number of numns of first Matrix: ");
-								scanf("%d", &n1);
-								printf("%d", n1);
-
-								// Read size of Matrix B from user
-								printf("\nEnter the number of ms of Second Matrix: ");
-								scanf("%d", &m2);
-								printf("%d", m2);
-								printf("\nEnter the number of numns of Second Matrix: ");
-								scanf("%d", &n2);
-								printf("%d", n2);
-
-
-// Read the elements of Matrix A from user
-								printf("\nEnter the elements of First Matrix: ");
-								for (i = 0; i < m1; i++) {
-																for (j = 0; j < n1; j++) {
-																								printf("\nA[%d][%d]: ", i, j);
-																								scanf("%d", &A[i][j]);
-																								printf("%d", A[i][j]);
-																}
-								}
-								// Read the elements of Matrix B from user
-								printf("\nEnter the elements of Second Matrix: ");
-								for (i = 0; i < m2; i++) {
-																for (j = 0; j < n2; j++) {
-																								printf("\nB[%d][%d]: ", i, j);
-																								scanf("%d", &B[i][j]);
-																								printf("%d", B[i][j]);
-																}
-								}
-
+								int i, j;
 
 								int thread_num=0;
 								int k;
@@ -97,16 +123,46 @@ int main()
 								for ( k = 0; k < m1; k++) {
 																for(l=0; l<n2; l++) {
 																								pthread_join(threads[k][l], NULL);
-																								C[k][l] = cells[k][l].result;
+																								C1[k][l] = cells[k][l].result;
 																}
 								}
 
-								for ( i = 0; i < m1; i++) {
-																for (int j = 0; j < n2; j++)
-																								printf("%d ", C[i][j]);
 
-																printf("\n");
+
+}
+
+void rowThreading()
+{
+								printf("----- B) CREATE A THREAD FOR EACH ROW ----- \n" );
+								int i, j;
+
+								int thread_num=0;
+								int k;
+								int l;
+								pthread_t threads[m1];
+								struct row rows[m1];
+								for (i = 0; i < m1; i++) {
+																rows[i].row_num=i;
+																rows[i].n=n2;
+																rows[i].m=n1;
+																pthread_create(&threads[i], NULL, multiply_row, &rows[i]);
 								}
 
+								int count=0;
+								for ( k = 0; k < m1; k++) {
+
+																pthread_join(threads[k], NULL);
+
+								}
+
+}
+
+int main()
+{
+								readMatrix();
+								clock_t time;
+								cellThreading();
+								rowThreading();
+								writeFile();
 								return 0;
 }
