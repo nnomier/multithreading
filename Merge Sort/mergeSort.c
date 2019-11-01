@@ -35,16 +35,16 @@ int readArray()
 void remainingELements(int n1,int n2,int L[],int R[],int i , int j , int k){
   while(i<n1)
   {
-          arr[k] =L[i];
-          i++;
-          k++;
+    arr[k] =L[i];
+    i++;
+    k++;
   }
 
   while(j<n2)
   {
-          arr[k]=R[j];
-          j++;
-          k++;
+    arr[k]=R[j];
+    j++;
+    k++;
   }
 }
 
@@ -83,10 +83,37 @@ while(i<n1 && j<n2)
   k++;
 }
 
-  remainingELements(n1,n2,L,R,i,j,k);
+while(i<n1)
+{
+        arr[k] =L[i];
+        i++;
+        k++;
 }
 
+while(j<n2)
+{
+        arr[k]=R[j];
+        j++;
+        k++;
+}
+}
 
+void writeOriginalArray(int n)
+{
+
+  FILE *f;
+  int i;
+
+  f =fopen("input.txt","w");
+  fscanf(f, "%d",&n);
+  fprintf(f, "%d\n",n );
+  for(i=n; i>0; i--)
+  {
+      fprintf(f, "%d ",i+10 );
+  }
+  fclose(f);
+
+}
 
 void* mergeSort(void* item)
 {
@@ -127,6 +154,7 @@ printf("\n");
 }
 
 int main() {
+  // writeOriginalArray(100);
   int n=  readArray();
   struct params parameters;
   parameters.l = 0;

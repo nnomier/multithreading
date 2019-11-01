@@ -44,7 +44,7 @@ void readMatrix()
 	{
 			for(j=0; j<n2; j++)
 			{
-											fscanf(f, "%d",&*(B+i*n2+j));
+				fscanf(f, "%d",&*(B+i*n2+j));
 			}
 	}
 	C1= (int*) malloc(m1*n2*sizeof(int));
@@ -59,16 +59,16 @@ void writeFile(double t1,double t2){
 	f =fopen("output.txt","w");
 	fprintf(f, "result matrix entries \n");
 	for ( i = 0; i < m1; i++) {
-									for ( j = 0; j < n2; j++)
-																	fprintf(f, "%d ", *(C1+i*n2+j));
-									fprintf(f,"\n");
+		for ( j = 0; j < n2; j++)
+				fprintf(f, "%d ", *(C1+i*n2+j));
+		fprintf(f,"\n");
 	}
 	fprintf(f, "END1\t\t%lf\n\n",t1 );
 	fprintf(f, "result matrix entries \n");
 	for ( i = 0; i < m1; i++) {
-									for (int j = 0; j < n2; j++)
-																	fprintf(f, "%d ", *(C2+i*n2+j));
-									fprintf(f,"\n");
+		for (int j = 0; j < n2; j++)
+			fprintf(f, "%d ", *(C2+i*n2+j));
+		fprintf(f,"\n");
 	}
 	fprintf(f, "END2\t\t%lf\n",t2 );
 
@@ -84,8 +84,8 @@ void* multiply_cell(void* item)
 	int r = cell_struct->row;
 	int c = cell_struct->col;
 	for ( i = 0; i <n1; i++) {
-									int temp = A[r*n1+i]   * B[i*n2+c];
-									sum+=temp;
+		int temp = A[r*n1+i]   * B[i*n2+c];
+		sum+=temp;
 	}
 	cell_struct->result = sum;
 	pthread_exit(0);
@@ -93,8 +93,7 @@ void* multiply_cell(void* item)
 
 void* multiply_row(void* item)
 {
-	struct row *row_struct =
-									(struct row*) item;
+	struct row *row_struct = (struct row*) item;
 	int r = row_struct->row_num;
 	int m =row_struct->m;
 	int n = row_struct->n;
@@ -102,8 +101,8 @@ void* multiply_row(void* item)
 	int i;
 	int j;
 	for ( i = 0; i < n; i++)
-			for ( j = 0; j < m; j++)
-						*(C2+r*n+i) += *(A+r*m+j) * *(B+j*n+i);
+		for ( j = 0; j < m; j++)
+			*(C2+r*n+i) += *(A+r*m+j) * *(B+j*n+i);
 
 	pthread_exit(0);
 }
@@ -136,9 +135,9 @@ void cellThreading()
 	struct cell cells[m1][n2];
 	for (i = 0; i < m1; i++) {
 		for(j=0; j<n2; j++)
-		{       cells[i][j].row=i;
-						cells[i][j].col=j;
-						pthread_create(&threads[i][j], NULL, multiply_cell, &cells[i][j]);}
+    { cells[i][j].row=i;
+			cells[i][j].col=j;
+			pthread_create(&threads[i][j], NULL, multiply_cell, &cells[i][j]);}
 	}
 
 	for ( k = 0; k < m1; k++) {
